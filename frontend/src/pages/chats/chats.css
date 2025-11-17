@@ -1,0 +1,29 @@
+.chatsContainer {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    overflow: hidden;
+}
+
+.chatsContent {
+    display: flex;
+    flex: 1;
+    border-radius: var(--pico-border-radius);
+    border: var(--pico-border-width) solid var(--pico-secondary-border);
+}
+
+.resizer {
+    width: 4px;
+    cursor: col-resize;
+    background-color: transparent;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.resizer:hover {
+    background-color: var(--pico-primary);
+}
+
+.resizer:active {
+    background-color: var(--pico-primary);
+}

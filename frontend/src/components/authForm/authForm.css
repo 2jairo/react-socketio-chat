@@ -1,0 +1,13 @@
+form {
+    border: var(--pico-border-width) solid var(--pico-secondary-border);
+    padding: 20px;
+    border-radius: var(--pico-border-radius);
+}
+
+.error {
+    background-color: var(--pico-contrast-background);
+    color: var(--pico-contrast-inverse);
+    padding: 10px;
+    margin: 20px 0;
+    border-radius: var(--pico-border-radius);
+}

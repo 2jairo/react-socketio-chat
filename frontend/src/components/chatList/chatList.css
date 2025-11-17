@@ -1,0 +1,99 @@
+.list {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-right: var(--pico-border-width) solid var(--pico-secondary-border);
+    overflow: hidden;
+}
+
+.chat-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: var(--pico-border-width) solid var(--pico-secondary-border);
+}
+
+.chat-list-header h5 {
+    margin: 0;
+}
+
+.chat-list-loading,
+.chat-list-error,
+.chat-list-empty {
+    padding: 1rem;
+    text-align: center;
+}
+
+.chat-list-error article {
+    margin: 1rem;
+    background-color: var(--pico-del-color);
+}
+
+.chat-list-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.chat-item {
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    transition: background-color 0.2s ease;
+    border-radius: var(--pico-border-radius);
+}
+
+.chat-item.selected {
+    border: var(--pico-border-width) solid var(--pico-primary)
+}
+
+.chat-item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.chat-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.chat-item-header strong {
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-item-time {
+    color: var(--pico-muted-color);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.chat-item-preview {
+    display: flex;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.chat-item-username {
+    color: var(--pico-muted-color);
+    font-weight: 500;
+}
+
+.chat-item-message {
+    color: var(--pico-muted-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.chat-item-no-messages {
+    color: var(--pico-muted-color);
+    font-style: italic;
+}

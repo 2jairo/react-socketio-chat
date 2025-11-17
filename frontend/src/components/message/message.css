@@ -1,0 +1,84 @@
+.message-wrapper {
+    display: flex;
+}
+
+.message-wrapper.message-other {
+    justify-content: flex-start;
+}
+.message-wrapper.message-own {
+    justify-content: flex-end;
+}
+
+.message-wrapper .message {
+    max-width: 70%;
+    min-width: 200px;
+    padding: 10px;
+    border-radius: 12px;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for messages from others */
+.message-other .message {
+    border: 1px solid var(--pico-muted-border-color, #e0e0e0);
+}
+
+/* Styling for current user messages */
+.message-own .message {
+    background-color: var(--pico-primary-background, #0070f3);
+    color: white;
+    border: none;
+}
+
+.message-header {
+    margin-bottom: 0.25rem;
+}
+
+.message-username {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--pico-primary, #0070f3);
+}
+
+.message-own .message-username {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message-content {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    margin-bottom: 0.25rem;
+}
+
+.message-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: var(--pico-muted-color, #6c757d);
+}
+
+.message-own .message-time {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.message-edited {
+    font-size: 0.75rem;
+    font-style: italic;
+    color: var(--pico-muted-color, #6c757d);
+}
+
+.message-own .message-edited {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message-wrapper .message {
+        max-width: 85%;
+    }
+}
