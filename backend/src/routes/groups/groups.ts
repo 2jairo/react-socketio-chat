@@ -76,7 +76,8 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
         
             await fastify.ioWrapper.newGroup(
                 { group, members: [{ username: user!.username, id: ownerId }], messages: [] },
-                ownerId
+                ownerId,
+                group.id
             )
             
             reply.code(201).send({ group })
@@ -140,17 +141,15 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
                 throw error
             }
 
-            const members = await fastify.pg.getGroupMembers(uuid.group_id)
             const messages = await fastify.pg.listMessagesByGroup(uuid.group_id)
-            const group = await fastify.pg.getGroupById(uuid.group_id)
-
             if(messages.length) {
                 await fastify.pg.markAsSeen([req.user.userId], uuid.group_id, messages[messages.length -1].id)
             }
             
             await fastify.ioWrapper.newGroup(
-                { group: group!, members, messages },
-                req.user.userId
+                { messages },
+                req.user.userId,
+                uuid.group_id
             )
             reply.status(200).send()
         }
@@ -194,14 +193,11 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
 
             await fastify.pg.addUserToGroup(groupId, userId)
             // fastify.pg.markAsSeen([userId])
-            
-            const members = await fastify.pg.getGroupMembers(groupId)
-            const messages = await fastify.pg.listMessagesByGroup(groupId)
-
 
             await fastify.ioWrapper.newGroup(
-                { group, members, messages },
-                userId
+                { group },
+                userId,
+                groupId
             )
             
             reply.status(200).send()

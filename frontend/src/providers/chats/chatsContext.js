@@ -36,12 +36,20 @@ import { createContext } from 'react'
  */
 
 /**
+ * @typedef {{
+ *      [userId: number]: { online: boolean, writting: boolean }
+ * }} MemberState
+ */
+
+/**
  * @typedef {Object} ChatscontextType
  * @property {Chat[]} chats
  * @property {boolean} loading
  * @property {null | string} error
  * @property {Chat} currentChat
  * @property {() => Promise<void>} fetchChats
+ * @property {MemberState} membersState
+ * @property {import('react').Dispatch<import('react').SetStateAction<MemberState>>} setMembersState
  * @property {(c: Chat) => void} addChat
  * @property {(chatId: number) => void} removeChat
  * @property {(chatId: number, cb: (c: Chat) => Chat) => void} updateChat

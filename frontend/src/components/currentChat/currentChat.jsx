@@ -8,7 +8,7 @@ import './currentChat.css'
 
 export const CurrentChat = () => {
     const { user } = useContext(AuthContext)
-    const { currentChat } = useContext(ChatsContext)
+    const { currentChat, membersState } = useContext(ChatsContext)
     const openDialog = useRef(() => {})
     const endChatRef = useRef(null)
 
@@ -52,7 +52,9 @@ export const CurrentChat = () => {
                     <h5>{currentChat.group.name}</h5>
                     <small className="chat-members">
                         {currentChat.members.length} miembro{currentChat.members.length !== 1 ? 's' : ''}: {' '}
-                        {currentChat.members.map(m => m.username).join(', ')}
+
+                        {/* TODO */}
+                        {currentChat.members.map(m => `${m.username} (${membersState[m.id]?.online})`).join(', ')} 
                     </small>
                 </div>
 

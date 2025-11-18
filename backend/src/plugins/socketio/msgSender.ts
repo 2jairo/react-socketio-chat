@@ -1,3 +1,4 @@
+import { ErrKind, LocalError } from "error/error";
 import { FastifyInstance } from "fastify";
 import { Socket } from "socket.io";
 import { Group } from "types/group";
@@ -75,8 +76,8 @@ export class SocketIoWrapper {
         socket.on('disconnect', () => {
             const remaining = this.users[userId].removeConnection(socket.id)
             if(remaining === 0) {
-                delete this.users[userId]
                 this.online(userId, false)
+                delete this.users[userId]
             }
 
             console.log(`User ${userId} disconnected from socket ${socket.id}`)
@@ -101,10 +102,10 @@ export class SocketIoWrapper {
             this.writting(group, userId, user.isWritting(group))
         })
 
-        this.online(userId, true)
         const channels = await this.fastify.pg.getUserGroups(userId)
         this.users[userId].groups = new Set(channels.map(g => g.id))
         await socket.join(channels.map(g => ServerSideRooms.group(g.id)))
+        this.online(userId, true)
     }
  
     async message(msg: Message, operation: 'create' | 'update' | 'delete') {
@@ -140,9 +141,20 @@ export class SocketIoWrapper {
     }
 
     async newGroup(
-        details: { group: Group, members: UserWithoutPassword[], messages: Message[] },
+        detailsPartial: { group?: Group, members?: UserWithoutPassword[], messages?: Message[] },
         newMemberId: number, 
+        groupId: number
     ) {
+        const group = await this.fastify.pg.getGroupById(groupId)
+        if(!group) {
+            throw new LocalError(ErrKind.GroupNotFound, 404)
+        }
+        const details = {
+            group: detailsPartial.group || group,
+            members: detailsPartial.members || await this.fastify.pg.getGroupMembers(groupId),
+            messages: detailsPartial.messages || await this.fastify.pg.listMessagesByGroup(groupId)
+        }
+
         // notify current members of group
         this.members({ group: details.group, members: details.members })
 

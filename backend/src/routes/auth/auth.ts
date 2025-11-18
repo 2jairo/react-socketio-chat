@@ -63,6 +63,12 @@ export const authRoutes = fp((fastify, options: RouteCommonOptions) => {
 				await fastify.pg.markAsSeen([user.id], GENERAL_GROUP_ID, generalLastMsgId.id)
 			}
 
+			await fastify.ioWrapper.newGroup(
+				{},
+				user.id,
+				GENERAL_GROUP_ID
+			)
+
 			const token = fastify.generateToken({ userId: user.id })
 			reply.code(201).send({ token, user: { username: user.username, id: user.id } })
 		}

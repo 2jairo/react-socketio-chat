@@ -9,6 +9,7 @@ export const ChatsProvider = ({ children }) => {
     const { token } = useContext(JwtContext)
     const api = useApi()
     const [chats, setChats] = useState([])
+    const [membersState, setMembersState] = useState({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [currentChat, setCurrentChatInner] = useState(null)
@@ -98,6 +99,8 @@ export const ChatsProvider = ({ children }) => {
         loading,
         error,
         currentChat,
+        membersState,
+        setMembersState,
         setCurrentChat,
         addChat,
         removeChat,
