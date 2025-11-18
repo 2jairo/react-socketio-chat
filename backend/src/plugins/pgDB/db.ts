@@ -92,7 +92,7 @@ export class Postgres {
     }
 
     async refreshJoinUuid(groupId: number) {
-        const joinUuid = crypto.randomUUID()
+        const joinUuid = crypto.randomUUID().replaceAll('-', '')
         await this.pool.query(
             `
                 INSERT INTO group_join_uuids (group_id, join_uuid)
@@ -135,7 +135,6 @@ export class Postgres {
         await this.pool.query(
             `
                 INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)
-                ON CONFLICT (group_id, user_id) DO NOTHING
             `,
             [groupId, userId]
         )
@@ -188,7 +187,7 @@ export class Postgres {
         return res.rows.length ? res.rows[0] : null
     }
 
-    async listMessagesByGroup(groupId: number, limit = 50, offset = 0) {
+    async listMessagesByGroup(groupId: number, limit = 99999, offset = 0) {
         const res = await this.pool.query<Message>(
             `
                 SELECT id, group_id, user_id, content, created_at, updated_at

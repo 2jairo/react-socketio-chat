@@ -77,7 +77,7 @@ export const ChatsProvider = ({ children }) => {
                 return {
                     ...c,
                     group: response.data.group,
-                    members: response.data.members,
+                    members: response.data.members.map(m => ({ ...m, online: false, writting: false })),
                     messages: response.data.messages,
                     not_seen: 0
                 }
@@ -102,6 +102,7 @@ export const ChatsProvider = ({ children }) => {
         addChat,
         removeChat,
         updateChat,
+        setChatsInner: setChats,
         fetchChatDetails
     }
 

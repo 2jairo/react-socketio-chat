@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useApi } from "../../hooks/useApi"
+import { joinGroupWithUuid } from "../../helpers/axios"
 
 const JoinChat = () => {
     const params = useParams()
@@ -13,7 +14,9 @@ const JoinChat = () => {
             navigate('/chats')
         }
 
-        api.post
+        joinGroupWithUuid(api, joinUuid).then(() => {
+            navigate('/chats')
+        })
     }, [api, params])
 
     return (

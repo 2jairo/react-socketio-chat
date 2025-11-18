@@ -7,7 +7,7 @@ import { ChatsContext } from '../chats/chatsContext'
 
 export const SocketIoProvider = ({ children }) => {
     const { token } = useContext(JwtContext)
-    const { updateChat, addChat, removeChat } = useContext(ChatsContext)
+    const { updateChat, addChat, removeChat, setChatsInner } = useContext(ChatsContext)
     const socketRef = useRef(null)
     const [connected, setConnected] = useState(false)
 
@@ -65,9 +65,16 @@ export const SocketIoProvider = ({ children }) => {
             removeChat(groupId)
         })
 
-        socket.on(ServerToClientEvents.online(), (msg) => {
+        socket.on(ServerToClientEvents.online(), ({ userId, value }) => {
+            setChatsInner((prev) => {
+                return [...prev] 
+                //TODO const updated = prev.map((chat) => chat)
+            })
+        })
+        socket.on(ServerToClientEvents.writting(), ({ userId, value }) => {
             
         })
+
 
         socketRef.current = socket
 

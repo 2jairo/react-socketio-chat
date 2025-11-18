@@ -18,7 +18,7 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
                     const last_msg = await fastify.pg.getGroupLastMessage(g.id)
                     const not_seen = await fastify.pg.getNotSeenCount(req.user.userId, g.id)
                     const join_uuid = g.owner_id === req.user.userId
-                        ? await fastify.pg.getJoinUuid(g.id)
+                        ? await fastify.pg.getJoinUuid({ groupId: g.id }).then(u => u?.join_uuid || null)
                         : null
 
                     return { group: g, last_msg, not_seen, join_uuid }
@@ -40,10 +40,8 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
                 throw new LocalError(ErrKind.GroupNotFound, 404, 'Group not found')
             }
 
-            const limit = 999_999_999
-            const offset = 0
             const members = await fastify.pg.getGroupMembers(groupId)
-            const messages = await fastify.pg.listMessagesByGroup(groupId, limit, offset)
+            const messages = await fastify.pg.listMessagesByGroup(groupId)
 
             if(messages.length) {
                 await fastify.pg.markAsSeen([req.user.userId], groupId, messages[messages.length -1].id)
@@ -85,25 +83,27 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
         }
     })
 
-    fastify.route({
-        method: 'GET',
-        url: `${options.prefix}/group/join-uuid`,
-        preValidation: [fastify.authenticate],
-        handler: async (req, reply) => {
-            const groupId = getIdFromParams(req, 'groupId')
-            const isOwner = await fastify.pg.isGroupOwner(groupId, req.user.userId)
-            if (!isOwner) {
-                throw new LocalError(ErrKind.Forbidden, 403, 'Only owner can refresh join uuid')
-            }
+    // // get join uuid
+    // fastify.route({
+    //     method: 'GET',
+    //     url: `${options.prefix}/group/:groupId/join-uuid/`,
+    //     preValidation: [fastify.authenticate],
+    //     handler: async (req, reply) => {
+    //         const groupId = getIdFromParams(req, 'groupId')
+    //         const isOwner = await fastify.pg.isGroupOwner(groupId, req.user.userId)
+    //         if (!isOwner) {
+    //             throw new LocalError(ErrKind.Forbidden, 403, 'Only owner can refresh join uuid')
+    //         }
 
-            const uuid = await fastify.pg.getJoinUuid({ groupId })
-            reply.code(200).send({ uuid })
-        }
-    })
+    //         const uuid = await fastify.pg.getJoinUuid({ groupId })
+    //         reply.code(200).send({ uuid })
+    //     }
+    // })
 
+    // refresh join uuid
     fastify.route({
         method: 'POST',
-        url: `${options.prefix}/group/join-uuid/refresh`,
+        url: `${options.prefix}/group/:groupId/join-uuid/refresh`,
         preValidation: [fastify.authenticate],
         handler: async (req, reply) => {
             const groupId = getIdFromParams(req, 'groupId')
@@ -117,9 +117,10 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
         }
     })
 
+    // join group with join uuid
     fastify.route({
         method: 'POST',
-        url: `${options.prefix}/join/:uuid`,
+        url: `${options.prefix}/join-uuid/:uuid`,
         preValidation: [fastify.authenticate],
         handler: async (req, reply) => {
             const uuidParam = (req.params as { uuid: string }).uuid
@@ -129,15 +130,29 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
                 return
             }
             
-            await fastify.pg.addUserToGroup(uuid.group_id, req.user.userId)
-            // fastify.pg.markAsSeen([req.user.userId], uuid.group_id)
+            try {
+                await fastify.pg.addUserToGroup(uuid.group_id, req.user.userId)
+            } catch (error: any) {
+                if(error.code === '23505') {
+                    reply.status(200).send()
+                    return
+                }
+                throw error
+            }
+
+            const members = await fastify.pg.getGroupMembers(uuid.group_id)
+            const messages = await fastify.pg.listMessagesByGroup(uuid.group_id)
+            const group = await fastify.pg.getGroupById(uuid.group_id)
+
+            if(messages.length) {
+                await fastify.pg.markAsSeen([req.user.userId], uuid.group_id, messages[messages.length -1].id)
+            }
             
-            const members = await fastify.pg.getGroupMembers(groupId)
-            const messages = await fastify.pg.listMessagesByGroup(groupId)
             await fastify.ioWrapper.newGroup(
-                { group, members, messages },
+                { group: group!, members, messages },
                 req.user.userId
             )
+            reply.status(200).send()
         }
     })
 

@@ -1,12 +1,26 @@
 import { useRef } from 'react'
 import { useEffect } from 'react'
+import { useState } from 'react'
 import './updateOrCreateChat.css'
+import { useContext } from 'react'
+import { ChatsContext } from '../../providers/chats/chatsContext'
+import { Link } from 'react-router-dom'
+import { copyToClipboard } from '../../helpers/copyToClipboard'
+import { refreshGroupJoinUuid } from '../../helpers/axios'
+import { useApi } from '../../hooks/useApi'
 
 export const UpdateOrCreateChat = ({ setOpenDialog, isCreate = false }) => {
+    const { currentChat, updateChat } = useContext(ChatsContext)
     const dialogElmt = useRef(null)
-    const dialogContent = useRef(null) 
+    const dialogContent = useRef(null)
+    const [newChatName, setNewChatName] = useState('')
+    const api = useApi()
+
 
     useEffect(() => {
+        if(!isCreate && currentChat) {
+            setNewChatName(currentChat.group.name)
+        }
         setOpenDialog(openDialog)
     }, [])
     
@@ -21,6 +35,23 @@ export const UpdateOrCreateChat = ({ setOpenDialog, isCreate = false }) => {
         dialogElmt.current.showModal()
         document.addEventListener('click', closeOnOuterClick)
     }
+
+    const copyJoinUuid = (e) => {
+        e.preventDefault()
+        copyToClipboard(`${location.origin}/join/${currentChat?.join_uuid}`)
+    }
+
+    const refreshJoinUuid = (e) => {
+        const groupId = currentChat.group.id
+
+        e.preventDefault()
+        refreshGroupJoinUuid(api, groupId).then((resp) => {
+            updateChat(groupId, (ch) => {
+                ch.join_uuid = resp.data.uuid.join_uuid
+                return ch
+            })
+        })
+    }
     
     const closeDialog = () => {
         dialogElmt.current.close()
@@ -31,15 +62,40 @@ export const UpdateOrCreateChat = ({ setOpenDialog, isCreate = false }) => {
         <dialog ref={dialogElmt}>
             <article ref={dialogContent}>
                 <header>
-                    <h3>Group name</h3>
-
-                    <button onClick={closeDialog}>Cerrar</button>
+                    <h3>{isCreate ? 'Nuevo grupo' : currentChat?.group.name}</h3>
+                    <button className='secondary' onClick={closeDialog}>Cerrar</button>
                 </header>
 
-                <p>body</p>
+                <form>
+                    <label>
+                        <p>Nombre:</p>
+                        <input type='text' value={newChatName} onChange={(e) => setNewChatName(e.currentTarget.value)} placeholder='Nombre del grupo'/>
+                    </label>
+
+                    {!isCreate && currentChat?.join_uuid && (
+                        <div>
+                            <label>
+                                <p>Url de unión</p>
+
+                                <Link to={'/join/' + currentChat.join_uuid}>
+                                    <code>{location.origin}/join/{currentChat.join_uuid}</code>
+                                </Link>
+                            </label>
+
+                            <button onClick={copyJoinUuid}>
+                                Copiar
+                            </button>
+                            <button onClick={refreshJoinUuid}>
+                                Actualizar
+                            </button>
+                        </div>
+                    )}
+
+
+                </form>
 
                 <footer>
-                    <button>Crear</button>
+                    <button>{isCreate ? 'Crear' : 'Actualizar'}</button>
                     <button onClick={closeDialog} className='secondary'>Cancelar</button>
                 </footer>
             </article>

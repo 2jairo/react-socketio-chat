@@ -47,6 +47,7 @@ import { createContext } from 'react'
  * @property {(chatId: number, cb: (c: Chat) => Chat) => void} updateChat
  * @property {(chatId: number) => Promise<void>} fetchChatDetails
  * @property {(chatId: number | null) => void} setCurrentChat
+ * @property {import('react').Dispatch<import('react').SetStateAction<Chat[]>>} setChatsInner
  */
 
 /**

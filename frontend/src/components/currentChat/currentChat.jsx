@@ -2,13 +2,19 @@ import { AuthContext } from '../../providers/auth/authContext'
 import { Message } from '../message/message'
 import { ChatsContext } from '../../providers/chats/chatsContext'
 import { MessageInput } from '../messageInput/messageInput'
-import { useContext } from 'react'
+import { useContext, useRef, useEffect } from 'react'
+import { UpdateOrCreateChat } from '../updateOrCreatechat/updateOrCreateChat'
 import './currentChat.css'
-import { Link } from 'react-router-dom'
 
 export const CurrentChat = () => {
     const { user } = useContext(AuthContext)
     const { currentChat } = useContext(ChatsContext)
+    const openDialog = useRef(() => {})
+    const endChatRef = useRef(null)
+
+    useEffect(() => {
+        endChatRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [currentChat])
 
     const formatMessageDate = (dateString) => {
         const date = new Date(dateString)
@@ -27,10 +33,6 @@ export const CurrentChat = () => {
                 year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined 
             })
         }
-    }
-
-    const copyJoinUrlToClipboard = () => {
-        navigator.clipboard.writeText(``);
     }
 
     // Group messages by date
@@ -52,14 +54,14 @@ export const CurrentChat = () => {
                         {currentChat.members.length} miembro{currentChat.members.length !== 1 ? 's' : ''}: {' '}
                         {currentChat.members.map(m => m.username).join(', ')}
                     </small>
-
-                    {currentChat.join_uuid && (
-                        <Link to={`/join/${currentChat.join_uuid}`}>
-                            {currentChat.join_uuid}
-                        </Link>
-                    )}
                 </div>
+
+                {user?.id === currentChat?.group.owner_id && (
+                    <button onClick={openDialog.current}>Editar</button>
+                )}
             </div>
+            
+            <UpdateOrCreateChat setOpenDialog={(d) => openDialog.current = d}/>
 
             <div className="chat-messages">
                 {currentChat.messages.length === 0 ? (
@@ -87,6 +89,7 @@ export const CurrentChat = () => {
                         </div>
                     ))
                 )}
+                <div ref={endChatRef}></div>
             </div>
 
             <div className="chat-input">
