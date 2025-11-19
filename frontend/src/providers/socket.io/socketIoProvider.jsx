@@ -54,14 +54,14 @@ export const SocketIoProvider = ({ children }) => {
                 return c
             })
         })
-        socket.on(ServerToClientEvents.newGroup(), ({ members, group, messages }) => {
+        socket.on(ServerToClientEvents.newGroup(), ({ members, group, messages, join_uuid }) => {
             let last_msg = null
             if(messages.length) {
                 const lastMsg = messages[messages.length -1]
                 const author = members.find(member => member.id === lastMsg.user_id)
                 last_msg = { ...lastMsg, username: author.username }
             }
-            addChat({ group, members, messages, last_msg, not_seen: 0 })
+            addChat({ group, members, messages, last_msg, not_seen: 0, join_uuid: join_uuid || null })
         })
 
         socket.on(ServerToClientEvents.removeGroup(), (groupId) => {
@@ -70,15 +70,24 @@ export const SocketIoProvider = ({ children }) => {
 
         socket.on(ServerToClientEvents.online(), ({ userId, value }) => {
             setMembersState((prev) => {
-                if(!prev[userId]) prev[userId] = { online: false, writting: false }
-
-                prev[userId].online = value
+                if(value) {
+                    prev[userId] = { online: true, writting: false }
+                } else {
+                    delete prev[userId]
+                }
                 return {...prev}
             })
         })
 
         socket.on(ServerToClientEvents.writting(), ({ userId, value }) => {
-            
+            setMembersState((prev) => {
+                if(!prev[userId]) {
+                    prev[userId] = { online: true, writting: value }
+                }
+
+                prev[userId].writting = value
+                return {...prev}
+            })
         })
 
         socketRef.current = socket

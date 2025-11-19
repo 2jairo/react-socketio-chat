@@ -4,11 +4,21 @@ import { createMessage } from '../../helpers/axios'
 import { ChatsContext } from "../../providers/chats/chatsContext"
 import { useContext } from "react"
 import './messageInput.css'
+import { useEffect } from "react"
 
 export const MessageInput = () => {
     const { currentChat } = useContext(ChatsContext)
     const api = useApi()
     const [newMessage, setNewMessage] = useState('')
+    const [writting, setWritting] = useState(false)
+
+    useEffect(() => {
+        setWritting(newMessage !== '')
+    }, [newMessage])
+
+    useEffect(() => {
+        //TODO
+    }, [writting])
 
     const handleSendMessage = async (e) => {
         e.preventDefault()

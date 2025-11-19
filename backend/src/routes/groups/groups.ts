@@ -69,13 +69,18 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
             const ownerId = req.user.userId
             const group = await fastify.pg.createGroup(body.name, ownerId)
             
-            await fastify.pg.refreshJoinUuid(group.id)
+            const join_uuid = await fastify.pg.refreshJoinUuid(group.id)
             await fastify.pg.addUserToGroup(group.id, ownerId)
 
             const user = await fastify.pg.getUserById(ownerId)
         
             await fastify.ioWrapper.newGroup(
-                { group, members: [{ username: user!.username, id: ownerId }], messages: [] },
+                { 
+                    group, 
+                    members: [{ username: user!.username, id: ownerId }], 
+                    messages: [], 
+                    join_uuid: join_uuid.join_uuid
+                },
                 ownerId,
                 group.id
             )

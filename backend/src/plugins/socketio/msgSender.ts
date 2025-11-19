@@ -141,7 +141,7 @@ export class SocketIoWrapper {
     }
 
     async newGroup(
-        detailsPartial: { group?: Group, members?: UserWithoutPassword[], messages?: Message[] },
+        detailsPartial: { group?: Group, members?: UserWithoutPassword[], messages?: Message[], join_uuid?: string | null },
         newMemberId: number, 
         groupId: number
     ) {
@@ -152,7 +152,8 @@ export class SocketIoWrapper {
         const details = {
             group: detailsPartial.group || group,
             members: detailsPartial.members || await this.fastify.pg.getGroupMembers(groupId),
-            messages: detailsPartial.messages || await this.fastify.pg.listMessagesByGroup(groupId)
+            messages: detailsPartial.messages || await this.fastify.pg.listMessagesByGroup(groupId),
+            join_uuid: detailsPartial.join_uuid || null
         }
 
         // notify current members of group

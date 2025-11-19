@@ -3,7 +3,7 @@ import fp from 'fastify-plugin'
 import { ErrKind, LocalError } from 'error/error'
 import bcrypt from 'bcryptjs'
 import { RouteCommonOptions } from 'types/routesCommon'
-import { GENERAL_GROUP_ID } from 'plugins/pgDB/db'
+import { GENERAL_GROUP_ID, ROOT_ID } from 'plugins/pgDB/db'
 
 type LoginBody = { username: string, password: string }
 type SigninBody = { username: string, password: string }
