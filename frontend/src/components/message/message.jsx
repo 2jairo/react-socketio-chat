@@ -1,6 +1,6 @@
 import './message.css'
 
-export const Message = ({ message, username, isCurrentUser }) => {
+export const Message = ({ message, user, isCurrentUser }) => {
     const formatMessageTime = (dateString) => {
         const date = new Date(dateString)
         return date.toLocaleTimeString('es-ES', { 
@@ -9,13 +9,18 @@ export const Message = ({ message, username, isCurrentUser }) => {
         })
     }
 
+    function colorFromIdSpread(id) {
+        const hue = (id * 137) % 360;  // 137° = golden angle → best spread
+        return `hsl(${hue}, 65%, 55%)`;
+    }
+
     return (
         <div className={`message-wrapper ${isCurrentUser ? 'message-own' : 'message-other'}`}>
             <article className="message">
                 {!isCurrentUser && (
                     <div className="message-header">
-                        <strong className="message-username">
-                            {username || 'Desconocido'}
+                        <strong className="message-username" style={{ color: colorFromIdSpread(user?.id || 0) }}>
+                            {user?.username || 'Desconocido'}
                         </strong>
                     </div>
                 )}

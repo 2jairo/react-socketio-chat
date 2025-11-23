@@ -55,6 +55,18 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
         }
     })
 
+    fastify.route({
+        method: 'GET',
+        url: `${options.prefix}/members/:groupId`,
+        preValidation: [fastify.authenticate],
+        handler: async (req, reply) => {
+            const groupId = getIdFromParams(req, 'groupId')
+            const members = await fastify.pg.getGroupMembers(groupId)
+            
+            reply.code(200).send( { members })            
+        }
+    })
+
     // Create a group
     fastify.route({
         method: 'POST',
@@ -86,6 +98,30 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
             )
             
             reply.code(201).send({ group })
+        }
+    })
+
+    // Update a group
+    fastify.route({
+        method: 'PUT',
+        url: `${options.prefix}/group/:groupId`,
+        preValidation: [fastify.authenticate],
+        handler: async (req, reply) => {
+            const groupId = getIdFromParams(req, 'groupId')
+
+            const body = req.body as CreateGroupBody
+            if (!body?.name) {
+                throw new LocalError(ErrKind.InternalServerError, 400, 'name is required')
+            }
+
+            const ownerId = req.user.userId
+            const updated = await fastify.pg.updateGroup(groupId, ownerId, body.name)
+            if(!updated) {
+                throw new LocalError(ErrKind.Forbidden, 403)
+            }
+
+            fastify.ioWrapper.updateGroup(groupId, body.name)
+            reply.code(201)
         }
     })
 
@@ -132,8 +168,7 @@ export const groupsRoutes = fp((fastify, options: RouteCommonOptions) => {
             const uuidParam = (req.params as { uuid: string }).uuid
             const uuid = await fastify.pg.getJoinUuid({ joinUuid: uuidParam })
             if(!uuid) {
-                //TODO
-                return
+                throw new LocalError(ErrKind.GroupNotFound, 404)
             }
             
             try {

@@ -7,6 +7,7 @@ export const corsPlugin = fp(async (fastify) => {
         origin: (o, cb) => {
             cb(null, true)
         },
+        methods: [ "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"],
         credentials: true
     })
 })

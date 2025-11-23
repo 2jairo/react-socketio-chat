@@ -91,7 +91,7 @@ export const ChatsProvider = ({ children }) => {
     }
 
     const setCurrentChat = (chatId) => {
-        setCurrentChatInner(chats.find((ch) => ch.group.id === chatId) || null)
+        setCurrentChatInner(structuredClone(chats.find((ch) => ch.group.id === chatId) || null))
     }
  
     const value = {

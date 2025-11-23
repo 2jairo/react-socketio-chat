@@ -28,7 +28,7 @@ export const messagesRoutes = fp((fastify, options: RouteCommonOptions) => {
 			const message = await fastify.pg.createMessage(groupId, req.user.userId, content.trim())
 
 			await fastify.ioWrapper.message(message, 'create')				
-			reply.code(201).send({ message })
+			reply.code(201).send()
 		}
 	})
 
@@ -58,7 +58,7 @@ export const messagesRoutes = fp((fastify, options: RouteCommonOptions) => {
 			const updated = await fastify.pg.updateMessage(messageId, content.trim())
 			fastify.ioWrapper.message(updated!, 'update')
 
-			reply.code(200).send({ message: updated! })
+			reply.code(200).send()
 		}
 	})
 

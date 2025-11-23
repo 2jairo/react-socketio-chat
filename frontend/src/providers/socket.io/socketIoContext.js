@@ -17,6 +17,7 @@ export const ServerToClientEvents = {
     message: () => 'message',
     members: () => 'members',
     newGroup: () => 'newGroup',
+    updateGroup: () => 'updateGroup',
     removeGroup: () => 'removeGroup',
     online: () => 'online',
     writting: () => 'writting'

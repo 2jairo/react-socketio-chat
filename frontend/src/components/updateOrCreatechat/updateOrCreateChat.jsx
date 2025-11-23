@@ -6,7 +6,7 @@ import { useContext } from 'react'
 import { ChatsContext } from '../../providers/chats/chatsContext'
 import { Link } from 'react-router-dom'
 import { copyToClipboard } from '../../helpers/copyToClipboard'
-import { refreshGroupJoinUuid } from '../../helpers/axios'
+import { createChat, updateChat as updateChatAxios, refreshGroupJoinUuid } from '../../helpers/axios'
 import { useApi } from '../../hooks/useApi'
 
 export const UpdateOrCreateChat = ({ setOpenDialog, isCreate = false }) => {
@@ -52,6 +52,17 @@ export const UpdateOrCreateChat = ({ setOpenDialog, isCreate = false }) => {
             })
         })
     }
+
+    const handleSubmit = async (e) => {
+        if(e) e.preventDefault()
+
+        if(isCreate) {
+            await createChat(api, newChatName)
+        } else {
+            await updateChatAxios(api, currentChat.group.id, newChatName)
+        }
+        closeDialog()
+    }
     
     const closeDialog = () => {
         dialogElmt.current.close()
@@ -66,7 +77,7 @@ export const UpdateOrCreateChat = ({ setOpenDialog, isCreate = false }) => {
                     <button className='secondary' onClick={closeDialog}>Cerrar</button>
                 </header>
 
-                <form>
+                <form onSubmit={handleSubmit}>
                     <label>
                         <p>Nombre:</p>
                         <input type='text' value={newChatName} onChange={(e) => setNewChatName(e.currentTarget.value)} placeholder='Nombre del grupo'/>
@@ -95,7 +106,7 @@ export const UpdateOrCreateChat = ({ setOpenDialog, isCreate = false }) => {
                 </form>
 
                 <footer>
-                    <button>{isCreate ? 'Crear' : 'Actualizar'}</button>
+                    <button onClick={handleSubmit}>{isCreate ? 'Crear' : 'Actualizar'}</button>
                     <button onClick={closeDialog} className='secondary'>Cancelar</button>
                 </footer>
             </article>

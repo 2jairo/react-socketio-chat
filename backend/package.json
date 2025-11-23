@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",
+    "@fastify/multipart": "^9.3.0",
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^2.4.3",
     "dotenv": "^17.2.3",

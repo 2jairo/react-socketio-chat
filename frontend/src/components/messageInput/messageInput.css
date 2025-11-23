@@ -9,13 +9,18 @@ form {
     align-items: center;
 }
 
-.input-container input {
+.input-container textarea {
     flex: 1;
     margin: 0;
+    field-sizing: content;
 }
 
 .input-container button {
     width: auto;
     margin: 0;
     white-space: nowrap;
+}
+
+.input-container input {
+    width: 20%;
 }

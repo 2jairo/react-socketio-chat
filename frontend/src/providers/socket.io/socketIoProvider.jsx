@@ -3,13 +3,21 @@ import { io } from 'socket.io-client'
 import { JwtContext } from '../jwt/jwtContext'
 import { useRef, useEffect, useState, useContext } from 'react'
 import { ChatsContext } from '../chats/chatsContext'
+import { useApi } from '../../hooks/useApi'
+import { getChatMembers } from '../../helpers/axios'
 
 
 export const SocketIoProvider = ({ children }) => {
     const { token } = useContext(JwtContext)
-    const { updateChat, addChat, removeChat, setMembersState } = useContext(ChatsContext)
+    const { updateChat, addChat, removeChat, setMembersState, currentChat, chats } = useContext(ChatsContext)
     const socketRef = useRef(null)
+    const chatsRef = useRef({ currentChat, chats })
     const [connected, setConnected] = useState(false)
+    const api = useApi()
+
+    useEffect(() => {
+        chatsRef.current = { chats, currentChat }
+    }, [currentChat, chats])
 
     useEffect(() => {
         if(!token) return
@@ -26,13 +34,19 @@ export const SocketIoProvider = ({ children }) => {
         socket.on('disconnect', () => {
             setConnected(false)
         })
-        socket.onAny((event, args) => {
+        socket.onAny((event, ...args) => {
             console.log({ event, args })
         })
 
-        socket.on(ServerToClientEvents.message(), ({ msg, operation }) => {
+        socket.on(ServerToClientEvents.message(), async ({ msg, operation }) => {
+            let members = chatsRef.current.chats.find(c => c.group.id === msg.group_id)?.members || []
+            if(operation === 'create' && !members.length) {
+                members = (await getChatMembers(api, msg.group_id)).data.members
+            }
+
             updateChat(msg.group_id, (c) => {
                 if (operation === 'create') {
+                    c.members = members
                     const author = c.members.find(member => member.id === msg.user_id)
                     c.last_msg = { ...msg, username: author.username }
 
@@ -44,13 +58,18 @@ export const SocketIoProvider = ({ children }) => {
                 } else if(operation === 'delete') {
                     c.messages = c.messages.filter((m) => m.id !== msg.id)
                 }
+
+                if(chatsRef.current.currentChat?.group.id !== msg.group_id) {
+                    c.not_seen += 1;
+                }
+
                 return c
             })
         })
 
         socket.on(ServerToClientEvents.members(), ({ members, group }) => {
             updateChat(group.id, (c) => {
-                c.membes = members
+                c.members = members
                 return c
             })
         })
@@ -62,6 +81,13 @@ export const SocketIoProvider = ({ children }) => {
                 last_msg = { ...lastMsg, username: author.username }
             }
             addChat({ group, members, messages, last_msg, not_seen: 0, join_uuid: join_uuid || null })
+        })
+
+        socket.on(ServerToClientEvents.updateGroup(), ({ newName, groupId }) => {
+            updateChat(groupId, (c) => {
+                c.group.name = newName
+                return c
+            })
         })
 
         socket.on(ServerToClientEvents.removeGroup(), (groupId) => {
@@ -95,7 +121,7 @@ export const SocketIoProvider = ({ children }) => {
         return () => {
             socketRef.current?.disconnect()
         }
-    }, [token])
+    }, [token, api])
 
     const setCurrentChat = (id) => {
         if(!socketRef.current) return

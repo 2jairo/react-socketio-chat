@@ -85,10 +85,19 @@ export class Postgres {
 
     async createGroup(name: string, ownerId: number) {
         const res = await this.pool.query<Group>(
-            'INSERT INTO groups (name, owner_id) VALUES ($1, $2, $3) RETURNING *',
+            'INSERT INTO groups (name, owner_id) VALUES ($1, $2) RETURNING *',
             [name, ownerId]
         )
         return res.rows[0]
+    }
+
+    async updateGroup(groupId: number, ownerId: number, name: string) {
+        const res = await this.pool.query(
+            'UPDATE groups SET name = $1 WHERE id = $2 AND owner_id = $3',
+            [name, groupId, ownerId]
+        )
+        console.log(res.rowCount)
+        return (res.rowCount || 0) > 0
     }
 
     async refreshJoinUuid(groupId: number) {

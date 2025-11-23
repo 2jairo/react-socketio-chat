@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin'
 import { Server } from 'socket.io'
 import fastifySocketIO from 'fastify-socket.io'
+import multipart from '@fastify/multipart'
 import { JwtClaims } from '../jwt/jwt'
 import { SocketIoWrapper } from './msgSender'
 
@@ -25,6 +26,8 @@ export const socketIoPlugin = fp(async (fastify) => {
             },
         }
     })
+    await fastify.register(multipart)
+
     fastify.decorate('ioWrapper', new SocketIoWrapper(fastify))
     
     fastify.io.use(async (socket, next) => {

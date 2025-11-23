@@ -48,6 +48,9 @@
 
 /* Chat Header */
 .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 1rem;
     border-bottom: var(--pico-border-width) solid var(--pico-secondary-border);
     background-color: var(--pico-background-color);
@@ -55,6 +58,17 @@
 
 .chat-header-info h5 {
     margin: 0 0 0.25rem 0;
+
+}
+.chat-header-info span {
+    color: var(--pico-secondary-border);
+    
+    &.online {
+        color: var(--pico-color)
+    }
+    &.writting {
+        color: var(--pico-primary)
+    }
 }
 
 .chat-members {

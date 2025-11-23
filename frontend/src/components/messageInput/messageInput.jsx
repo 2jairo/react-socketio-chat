@@ -5,38 +5,51 @@ import { ChatsContext } from "../../providers/chats/chatsContext"
 import { useContext } from "react"
 import './messageInput.css'
 import { useEffect } from "react"
+import { SocketIoContext } from "../../providers/socket.io/socketIoContext"
 
 export const MessageInput = () => {
     const { currentChat } = useContext(ChatsContext)
+    const { setWritting } = useContext(SocketIoContext)
     const api = useApi()
     const [newMessage, setNewMessage] = useState('')
-    const [writting, setWritting] = useState(false)
+    const [writting, setWrittingInner] = useState(false)
 
     useEffect(() => {
-        setWritting(newMessage !== '')
+        setWrittingInner(newMessage !== '')
     }, [newMessage])
 
     useEffect(() => {
-        //TODO
+        setWritting(writting)
     }, [writting])
 
     const handleSendMessage = async (e) => {
-        e.preventDefault()
+        if(e) e.preventDefault()
         if (!newMessage.trim()) return
 
         await createMessage(api, currentChat.group.id, newMessage)
         setNewMessage('')
     }
 
+    const handleOnChange = (e) => {
+        if(e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault()
+            e.stopPropagation()
+            handleSendMessage()
+        }
+    }
+
     return (
         <form onSubmit={handleSendMessage}>
             <div className="input-container">
-                <input
+                <input type="file" />    
+
+                <textarea
                     type="text"
                     placeholder="Escribe un mensaje..."
                     value={newMessage}
+                    onKeyDown={handleOnChange}
                     onChange={(e) => setNewMessage(e.target.value)}
-                />
+                ></textarea>
 
                 <button type="submit" disabled={!newMessage.trim()}>
                     Enviar

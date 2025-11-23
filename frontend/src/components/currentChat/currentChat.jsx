@@ -35,6 +35,12 @@ export const CurrentChat = () => {
         }
     }
 
+    const getUserStatus = (userId) => {
+        if(membersState[userId]?.writting) return 'writting'
+        if(membersState[userId]?.online) return 'online'
+        return ''
+    }
+
     // Group messages by date
     const groupedMessages = currentChat.messages.reduce((groups, message) => {
         const date = formatMessageDate(message.created_at)
@@ -50,12 +56,14 @@ export const CurrentChat = () => {
             <div className="chat-header">
                 <div className="chat-header-info">
                     <h5>{currentChat.group.name}</h5>
-                    <small className="chat-members">
-                        {currentChat.members.length} miembro{currentChat.members.length !== 1 ? 's' : ''}: {' '}
-
-                        {/* TODO */}
-                        {currentChat.members.map(m => `${m.username} (${membersState[m.id]?.online})`).join(', ')} 
-                    </small>
+                    <p>
+                        <span>Miembros ({currentChat.members.length}): </span>
+                        {currentChat.members.map((m, i) => (
+                            <span key={m.id} className={getUserStatus(m.id)}>
+                                {m.username}{i === currentChat.members.length -1 ? '' : ', '}
+                            </span>
+                        ))}
+                    </p>
                 </div>
 
                 {user?.id === currentChat?.group.owner_id && (
@@ -84,7 +92,7 @@ export const CurrentChat = () => {
                                 return <Message
                                     key={message.id}
                                     message={message}
-                                    username={messageUser?.username}
+                                    user={messageUser}
                                     isCurrentUser={isCurrentUser}
                                 />
                             })}

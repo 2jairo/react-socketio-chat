@@ -58,7 +58,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.25rem;
 }
 
 .chat-item-header strong {
@@ -68,6 +67,16 @@
     white-space: nowrap;
 }
 
+.chat-item-not-seen {
+    background-color: var(--pico-primary);
+    padding: 2px;
+    min-width: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--pico-border-radius);
+}
+
 .chat-item-time {
     color: var(--pico-muted-color);
     font-size: 0.75rem;
@@ -75,9 +84,11 @@
 }
 
 .chat-item-preview {
+    overflow: hidden;
     display: flex;
     gap: 0.25rem;
     font-size: 0.875rem;
+    align-items: center;
 }
 
 .chat-item-username {
@@ -91,6 +102,9 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     flex: 1;
+    min-width: 0;
+    display: block;
+    flex-shrink: 0;  /* prevent username from shrinking */
 }
 
 .chat-item-no-messages {

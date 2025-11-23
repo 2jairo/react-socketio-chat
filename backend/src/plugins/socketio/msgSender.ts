@@ -9,6 +9,7 @@ export const ServerToClientEvents = {
     message: () => 'message',
     members: () => 'members',
     newGroup: () => 'newGroup',
+    updateGroup: () => 'updateGroup',
     removeGroup: () => 'removeGroup',
     online: () => 'online',
     writting: () => 'writting'
@@ -30,6 +31,12 @@ type UserConnectionProps = {
 class UserConnections {
     conn: { [socketId: string]: UserConnectionProps } = {}
     groups = new Set<number>()
+    userId: number
+
+    constructor(userId: number) {
+        this.userId = userId
+    }
+
 
     updateConnection(socketId: string, cb: (c: UserConnectionProps) => UserConnectionProps) {
         this.conn[socketId] = cb(this.conn[socketId])
@@ -53,6 +60,11 @@ class UserConnections {
             .some((props) => props.writting && props.currentGroup === groupId)
     }
 
+    isCurrentGroup(groupId: number) {
+        return Object.values(this.conn)
+            .some((props) => props.currentGroup === groupId)
+    }
+
     get sockets() {
         return Object.values(this.conn).map((c) => c.socket)
     }
@@ -67,7 +79,7 @@ export class SocketIoWrapper {
         const userId = socket.user.userId
 
         if(!this.users[userId]) {
-            this.users[userId] = new UserConnections()
+            this.users[userId] = new UserConnections(userId)
         }
         this.users[userId].addConnection(socket)
 
@@ -112,6 +124,22 @@ export class SocketIoWrapper {
         this.fastify.io
             .to(ServerSideRooms.group(msg.group_id))
             .emit(ServerToClientEvents.message(), { operation, msg })
+
+        const onlineUsers = Object.values(this.users)
+            .filter((u) => u.isCurrentGroup(msg.group_id))
+            .map((u) => u.userId)
+
+        // const onlineUsers = await this.fastify.io
+        //     .in(ServerSideRooms.group(msg.group_id))
+        //     .fetchSockets()
+        //     .then((s) => { 
+        //         return s.map((ss) => {
+        //             //@ts-ignore
+        //             return ss.user.userId
+        //         })
+        //     })
+
+        await this.fastify.pg.markAsSeen(onlineUsers, msg.group_id, msg.id)
     }
 
     writting(groupId: number, userId: number, value: boolean) {
@@ -140,6 +168,12 @@ export class SocketIoWrapper {
             .emit(ServerToClientEvents.removeGroup(), groupId)
     }
 
+    updateGroup(groupId: number, newName: string) {
+        this.fastify.io
+            .to(ServerSideRooms.group(groupId))
+            .emit(ServerToClientEvents.updateGroup(), { groupId, newName })
+    }
+
     async newGroup(
         detailsPartial: { group?: Group, members?: UserWithoutPassword[], messages?: Message[], join_uuid?: string | null },
         newMemberId: number, 
@@ -166,10 +200,8 @@ export class SocketIoWrapper {
 
             for (const s of this.users[newMemberId].sockets) {
                 await s.join(room)
-                s.send(ServerToClientEvents.newGroup(), details)
+                s.emit(ServerToClientEvents.newGroup(), details)
             }
         }
     }
 }
-
-// const sockets = await this.fastify.io.in(room).fetchSockets()
