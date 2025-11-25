@@ -70,6 +70,7 @@ export const SocketIoProvider = ({ children }) => {
         socket.on(ServerToClientEvents.members(), ({ members, group }) => {
             updateChat(group.id, (c) => {
                 c.members = members
+                c.group.members_length = members.length
                 return c
             })
         })

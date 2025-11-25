@@ -3,7 +3,8 @@ import { ChatsContext } from '../../providers/chats/chatsContext'
 import './chatList.css'
 import { UpdateOrCreateChat } from '../updateOrCreatechat/updateOrCreateChat'
 import { useRef } from 'react'
-
+import { GroupIcon, UserIcon } from '../icons/icons'
+ 
 export const ChatList = ({ widthPercent, onSelectChat, selectedChatId }) => {
     const { chats, error, loading } = useContext(ChatsContext)
     const openDialog = useRef(() => {})
@@ -63,7 +64,13 @@ export const ChatList = ({ widthPercent, onSelectChat, selectedChatId }) => {
                     >
                         <div className="chat-item-content">
                             <div className="chat-item-header">
-                                <strong>{c.group.name}</strong>
+                                <strong>
+                                    {c.group.members_length > 2
+                                        ? <GroupIcon />
+                                        : <UserIcon />
+                                    }
+                                    {c.group.name}
+                                </strong>
 
                                 {c.last_msg && (
                                     <small className="chat-item-time">

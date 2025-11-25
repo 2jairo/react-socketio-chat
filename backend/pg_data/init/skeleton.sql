@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS groups (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     owner_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    members_length INT NOT NULL DEFAULT 0,
     is_general BOOLEAN NOT NULL DEFAULT FALSE
 );
 
@@ -46,6 +47,34 @@ CREATE TABLE message_attachments(
     file_url VARCHAR(100) NOT NULL,
     file_type VARCHAR(50) NOT NULL
 );
+
+
+CREATE OR REPLACE FUNCTION adjust_group_members_length()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE groups
+        SET members_length = members_length + 1
+        WHERE id = NEW.group_id;
+
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE groups
+        SET members_length = members_length - 1
+        WHERE id = OLD.group_id;
+
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_adjust_members_length
+AFTER INSERT OR DELETE ON group_members
+FOR EACH ROW
+EXECUTE FUNCTION adjust_group_members_length();
+
 
 
 CREATE OR REPLACE FUNCTION root_user_and_general_group(

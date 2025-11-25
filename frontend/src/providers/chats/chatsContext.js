@@ -8,6 +8,7 @@ import { createContext } from 'react'
  *          name: string
  *          owner_id: number
  *          is_general: boolean
+ *          members_length: number
  *      }
  *      members: {
  *          username: string

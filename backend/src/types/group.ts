@@ -6,6 +6,7 @@ export interface Group {
   name: string
   owner_id: number
   is_general: boolean
+  members_length: number
 }
 
 export interface GroupWithOwnerName extends Group {
